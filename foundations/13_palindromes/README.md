@@ -15,5 +15,6 @@ A palindrome is a string that is spelled the same both forwards and backwards, u
 palindromes('racecar') // true
 palindromes('tacos') // false
 ```
-
+plan:
+input string -->stripped : tolowercase, remove spaces, commas etc-->reverse--> reversed equals stripped?
 
