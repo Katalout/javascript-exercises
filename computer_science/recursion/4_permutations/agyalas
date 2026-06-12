@@ -1,0 +1,8 @@
+[[]] // l=0
+tedd be az egyet, vagyis arraylength0.splice(0,0,1)
+[[1]] // l=1 // array[0]
+tedd be a kettöt elöre es hatra // 
+[[1,2],[2,1]] //l=2 // array[0],array[1] // arraylength1.splice(0,0,l) es [1].splice(1,0,l)
+tedd be a harmat elöre, hatra es közepre
+[[1,2,3],[2,1,3],[1,3,2],[2,3,1],[3,1,2],[3,2,1]] //l=3 // foreach of arraylength2, arraylength2.splice(0,0,3), (1,0,3), (2,0,3)
+tedd be a negyet elöre, 2.helyre, 3.helyre, 4.helyre

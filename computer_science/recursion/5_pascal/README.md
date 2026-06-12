@@ -16,3 +16,13 @@ The pattern continues forever.
 Your task is to create a *recursive* function, `pascal` - that will take an input `n` and output the `n`th pascal's row as an array of numbers.
 
 For example, `pascal(3)` should return `[1, 2, 1]`.
+
+
+[1]
+[1,1]
+[1,2,1]
+[1,3,3,1]
+[1,4,6,4,1]
+[1,5,10,10,5,1]
+[1,6,15,20,15,6,1]
+[1,7,21,35,35,21,7,1]

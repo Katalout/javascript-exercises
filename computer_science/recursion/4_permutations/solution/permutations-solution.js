@@ -22,4 +22,4 @@ const permutations = function (array, index = 0, results = []) {
 };
 
 // Do not edit below this line
-module.exports = permutations;
+/* module.exports = permutations; */
