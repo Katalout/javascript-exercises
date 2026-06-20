@@ -13,7 +13,6 @@ class linkedList {
 
     append(value) {
         let node = new Node(value);
-        //current tail's next to be updated to this one
         (this._size === 0) ? this._head = node : this._tail.next = node;
         this._tail = node;
         this._size++;
@@ -67,7 +66,41 @@ class linkedList {
             //this should also be iteratored but i can't be arsed to tweak it
         }
         console.log(string);
+        return string;
     }
+    insertAt(index, ...values) {
+        if (index < 0 || index > this._size) throw new RangeError("nope");
+        else {
+            let current = this._head;
+            if (index === 0) this.insert(null, ...values);
+            let i = 0;
+            while (i < index) {
+                if (i === index - 1) {
+                    this.insert(current, ...values);
+                }
+                current = current.next;
+                i++;
+            }
+            console.log(list.toString());
+        };
+    }
+    insert(prev, ...values) {
+        let nextAfterInsert = (prev) ? prev.next : this._head;
+        console.log("insert called with: ", prev, values, " nextafterinsert: ", nextAfterInsert);
+        let newnodes = values.map((value) => new Node(value, null));
+        console.log(newnodes);
+        newnodes.forEach((node, index) => {
+            console.log(node);
+            if (index === 0) { (prev) ? prev.next = node : this._head = node };
+            if (index < newnodes.length - 1) node.next = newnodes[index + 1];
+            if (index === newnodes.length - 1) {
+                node.next = nextAfterInsert;
+                if (node.next === null) this._tail = node;
+            }
+            this._size++;
+        });
+    }
+
     iterator(value, success, fail) {
         let current = this._head;
         let i = 0;
@@ -77,6 +110,7 @@ class linkedList {
             i++;
         }
         return fail;
+        //return an object with the options? hmmm
     }
 }
 
