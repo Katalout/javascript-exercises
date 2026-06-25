@@ -1,4 +1,4 @@
-import { mergeSort } from "./mergesort.js";
+/* import { mergeSort } from "./mergesort.js"; */
 
 class Node {
     constructor(value, left = null, right = null) {
@@ -14,9 +14,10 @@ class Tree {
     includes(value, node = this.root) {
         if (node == null) return false;
         if (node.value === value) return true;
-        return (this.includes(value, node.left) || this.includes(value, node.right));
-        /* if (this.includes(value, node.left)) return true;
-        else return this.includes(value, node.right); */
+        return (value < node.value) ? this.includes(value, node.left) :
+            this.includes(value, node.right);
+        /* return (this.includes(value, node.left) || this.includes(value, node.right)); */
+        //but this isnt effective, could be shorter due to it being sorted
     }
     insert(value, node = this.root) {
         let newnode = new Node(value);
@@ -39,14 +40,144 @@ class Tree {
         }
     }
 
+    levelOrderForEachIterating(callback, node = this.root) {
+        if (!callback) throw new Error("gimme callback");
+        if (node === null) return;
+        callback(node.value);
+        if (this.isLeaf(node)) return;
+        let queue = [];
+        if (node.left) queue.push(node.left);
+        if (node.right) queue.push(node.right);
+        while (queue.length > 0) {
+            let next = queue.shift();
+            callback(next.value);
+            if (next.left) queue.push(next.left);
+            if (next.right) queue.push(next.right);
+        }
+    }
+    levelOrderRec(callback) {
+        const queue = [this.root];
+        if (!callback) throw new Error("gimme callback");
+        this.levelOrderForEachRec(callback, queue);
+    }
+    levelOrderForEachRec(callback, queue) {
+        let node = queue.shift();
+        if (!node) return;
+        callback(node.value);
+        if (node.left) queue.push(node.left);
+        if (node.right) queue.push(node.right);
+        if (queue.length > 0) this.levelOrderForEachRec(callback, queue);
+    }
+    inOrderLDRForEachRec(callback) {
+        const queue = []
+        if (!callback) throw new Error("gimme callback");
+        this.inOrderLDRForEach(callback, queue);
+    }
+    inOrderLDRForEach(callback, queue, node = this.root) {
+        while (node.left) {
+            queue.push(node);
+            node = node.left;
+        }
+        callback(node.value);
+        if (node.right) this.inOrderLDRForEach(callback, queue, node.right);
+        while (queue.length > 0) {
+            node = queue.pop();
+            callback(node.value);
+            if (node.right) this.inOrderLDRForEach(callback, queue, node.right);
+        }
+    }
+    preOrderDLRForEachOuter(callback) {
+        if (!callback) throw new Error("gimme callback");
+        const queue = [this.root];
+        this.preOrderDLRForEach(callback, queue);
+    }
+
+    preOrderDLRForEach(callback, queue) {
+        let node = queue.pop();
+        callback(node.value);
+        if (node.right) queue.push(node.right);
+        while (node.left) {
+            node = node.left;
+            callback(node.value);
+            if (node.right) queue.push(node.right);
+        }
+        if (queue.length > 0) this.preOrderDLRForEach(callback, queue);
+    }
+
+    postOrderLRD(callback, node = this.root) {
+        if (!callback) throw new Error("gimme callback");
+        if (node == null)
+            return;
+
+        // first recur on left subtree
+        this.printPostorder(node.left);
+
+        // then recur on right subtree
+        this.printPostorder(node.right);
+
+        // now deal with the node
+        callback(node.value);
+    }
+    height(value) {
+        let node = this.find(value);
+        if (!node) { console.log("not in tree"); return; }
+        let count = 0;
+        while (node.left || node.right) {
+            node = node.left ?? node.right;
+            count++
+        }
+        return count;
+    }
+
+    find(value, node = this.root) {
+        if (node === null) return;
+        if (node.value === value) {
+            console.log("found it: ", node);
+            return node;
+        }
+        return (value < node.value) ? this.find(value, node.left) :
+            this.find(value, node.right);
+    }
+
+    isLeaf(node) {
+        return (!node.left && !node.right);
+    }
+    delete(value, node = this.root, parentnode = null) { //2,{1},{5}
+
+        if (node.value === value && (!this.isLeaf(node))) {
+            let newroot = node.left ?? node.right;
+            if (node === this.root) this.root = newroot;
+            if (parentnode) {
+                (parentnode.value > value)
+                    ? parentnode.left = newroot
+                    : parentnode.right = newroot;
+            }
+            console.log(newroot);
+            while (newroot.right !== null) {
+                newroot = newroot.right;
+            }
+            newroot.right = node.right;
+            node = null;
+            return;
+        }
+        debugger;
+        if ((node.left) && node.left.value === value && this.isLeaf(node.left)) {
+            node.left = null;
+            return;
+        }
+        if (((node.right) && node.right.value === value) && (this.isLeaf(node.right))) {
+            node.right = null;
+            return;
+        }
+        if (value < node.value) this.delete(value, node.left, node);
+        else if (value > node.value) this.delete(value, node.right, node);
+    }
+
     #buildTree(array) {
-        console.log("arr before sort: ", array);
-        array = mergeSort(array);
         array = array.reduce((prev, curr) => {
             if (!prev.includes(curr)) prev.push(curr);
             return prev;
         }, []);
-        console.log("arr after sort: ", array);
         return this.#sortedArrayToBST(array, 0, array.length - 1)
     }
     #sortedArrayToBST(array, start, end) {
@@ -69,8 +200,7 @@ const prettyPrint = (node, prefix = '', isLeft = true) => {
     prettyPrint(node.left, `${prefix}${isLeft ? '    ' : '│   '}`, true);
 }
 
-let tree = new Tree([1, 7, 5, 4, 3, 10]);
-
+let tree = new Tree([1, 5, 9]);
 
 console.log(tree);
 prettyPrint(tree.root);
@@ -79,5 +209,6 @@ prettyPrint(othertree.root); */
 
 tree.insert(2);
 prettyPrint(tree.root);
-tree.insert(8);
+debugger;
+tree.delete(2);
 prettyPrint(tree.root);
