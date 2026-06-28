@@ -1,4 +1,4 @@
-class linkedList {
+export class linkedList {
     constructor() {
         this._head = null;
         this._tail = null;
@@ -100,6 +100,22 @@ class linkedList {
             this._size++;
         });
     }
+    removeAt(index) {
+        if (index < 0 || index >= this._size) throw new RangeError("nope");
+        if (index === 0) this.pop();
+        let current = this._head;
+        let i = 0;
+        while (i < index) {
+            if (i === index - 1) this.removeNextOf(current);
+            current = current.next;
+            i++;
+        }
+    }
+    removeNextOf(node) {
+        node.next = node.next.next;
+        if (node.next === null) this._tail = node;
+        this._size--;
+    }
 
     iterator(value, success, fail) {
         let current = this._head;
@@ -120,8 +136,3 @@ class Node {
         this.next = next;
     }
 }
-
-const list = new linkedList;
-list.prepend("origi head");
-list.append("origi tail");
-console.log(list);

@@ -16,12 +16,10 @@ class Tree {
         if (node.value === value) return true;
         return (value < node.value) ? this.includes(value, node.left) :
             this.includes(value, node.right);
-        /* return (this.includes(value, node.left) || this.includes(value, node.right)); */
-        //but this isnt effective, could be shorter due to it being sorted
     }
+
     insert(value, node = this.root) {
         let newnode = new Node(value);
-        /* if (this.includes(value)) return; */ //bar ezt meg lehetne sporolni nem? ha nincs ott ahova raknam akk nincs benne, nem?
         if (node.value === value) throw new Error("already in here bih");
         if (node.value > value) {
             if (node.left === null) {
@@ -57,76 +55,76 @@ class Tree {
     }
     levelOrderRec(callback) {
         const queue = [this.root];
+        const result = [];
         if (!callback) throw new Error("gimme callback");
-        this.levelOrderForEachRec(callback, queue);
+        this.levelOrderForEachRec(callback, queue, result);
+        return result;
     }
-    levelOrderForEachRec(callback, queue) {
+    levelOrderForEachRec(callback, queue, result) {
         let node = queue.shift();
         if (!node) return;
-        callback(node.value);
+        callback(node.value, result);
         if (node.left) queue.push(node.left);
         if (node.right) queue.push(node.right);
-        if (queue.length > 0) this.levelOrderForEachRec(callback, queue);
+        if (queue.length > 0) this.levelOrderForEachRec(callback, queue, result);
     }
     inOrderLDRForEachRec(callback) {
         const queue = []
+        const result = [];
         if (!callback) throw new Error("gimme callback");
-        this.inOrderLDRForEach(callback, queue);
+        this.inOrderLDRForEach(callback, queue, this.root, result);
+        return result;
     }
-    inOrderLDRForEach(callback, queue, node = this.root) {
+    inOrderLDRForEach(callback, queue, node = this.root, array) {
         while (node.left) {
             queue.push(node);
             node = node.left;
         }
-        callback(node.value);
-        if (node.right) this.inOrderLDRForEach(callback, queue, node.right);
+        callback(node.value, array);
+        if (node.right) this.inOrderLDRForEach(callback, queue, node.right, array);
         while (queue.length > 0) {
             node = queue.pop();
-            callback(node.value);
-            if (node.right) this.inOrderLDRForEach(callback, queue, node.right);
+            callback(node.value, array);
+            if (node.right) this.inOrderLDRForEach(callback, queue, node.right, array);
         }
     }
     preOrderDLRForEachOuter(callback) {
         if (!callback) throw new Error("gimme callback");
+        const result = [];
         const queue = [this.root];
-        this.preOrderDLRForEach(callback, queue);
+        this.preOrderDLRForEach(callback, queue, result);
+        return result;
     }
 
-    preOrderDLRForEach(callback, queue) {
+    preOrderDLRForEach(callback, queue, result) {
         let node = queue.pop();
-        callback(node.value);
+        callback(node.value, result);
         if (node.right) queue.push(node.right);
         while (node.left) {
             node = node.left;
-            callback(node.value);
+            callback(node.value, result);
             if (node.right) queue.push(node.right);
         }
-        if (queue.length > 0) this.preOrderDLRForEach(callback, queue);
+        if (queue.length > 0) this.preOrderDLRForEach(callback, queue, result);
     }
 
-    postOrderLRD(callback, node = this.root) {
-        if (!callback) throw new Error("gimme callback");
-        if (node == null)
-            return;
 
-        // first recur on left subtree
-        this.printPostorder(node.left);
-
-        // then recur on right subtree
-        this.printPostorder(node.right);
-
-        // now deal with the node
-        callback(node.value);
-    }
     height(value) {
         let node = this.find(value);
         if (!node) { console.log("not in tree"); return; }
-        let count = 0;
-        while (node.left || node.right) {
-            node = node.left ?? node.right;
-            count++
+        return findheight(node);
+    }
+
+
+    finddepth(value) {
+        let node = this.root;
+        let counter = 0;
+        while ((node) && node.value !== value) {
+            node = (value < node.value) ? node.left : node.right;
+            counter++;
         }
-        return count;
+        if (!node) return;
+        if (node.value === value) return counter;
     }
 
     find(value, node = this.root) {
@@ -138,6 +136,81 @@ class Tree {
         return (value < node.value) ? this.find(value, node.left) :
             this.find(value, node.right);
     }
+    findheight(node) {
+        if (node === null) {
+            return -1;
+        }
+        let lHeight = this.findheight(node.left);
+        let rHeight = this.findheight(node.right);
+
+        return Math.max(lHeight, rHeight) + 1;
+    }
+    postOrderLRDOuter(callback) {
+        let result = [];
+        this.postOrderLRD_print(callback, this.root, result);
+        return result;
+    }
+
+    postOrderLRD_print(callback, node = this.root, result) {
+
+        if (!callback) throw new Error("gimme callback");
+        if (node == null)
+            return;
+        if (node.left) this.postOrderLRD_print(callback, node.left, result);
+
+        if (node.right) this.postOrderLRD_print(callback, node.right, result);
+
+        callback(node.value, result);
+    }
+
+    postOrderLRD(callback, node = this.root, result) {
+
+        if (!callback) throw new Error("gimme callback");
+        if (node == null)
+            return;
+
+        // first recur on left subtree
+        this.postOrderLRD(callback, node.left, result);
+
+        // then recur on right subtree
+        this.postOrderLRD(callback, node.right, result);
+
+        // now deal with the node
+        result.push(callback(node));
+    }
+    postOrderLRD_re(callback, node = this.root, result) {
+
+        if (!callback) throw new Error("gimme callback");
+        if (node == null)
+            return;
+        if (node.left) this.postOrderLRD_re(callback, node.left, result);
+
+        if (node.right) this.postOrderLRD_re(callback, node.right, result);
+
+        callback(node);
+    }
+
+    isBalancedLRD() {
+        let result = [];
+        this.postOrderLRD((this.isBalanced.bind(this)), this.root, result);
+        console.log(result);
+        return !result.includes(false);
+        //am eleg lenne addig menni amig egy false-t talal, nem kell minnden node-ot bevizsgalni
+    }
+
+    isBalanced(node = this.root) {
+        if (this.isLeaf(node)) return true;
+        let lHeight = (node.left) ? this.findheight(node.left) : -1;
+        let rHeight = (node.right) ? this.findheight(node.right) : -1;
+        return (Math.abs(lHeight - rHeight) <= 1);
+    }
+    reBalance() {
+        let result = [];
+        this.postOrderLRD_re((node) => result.push(node.value), this.root, result);
+        this.root = this.#buildTree(result);
+        return this.root;
+    }
+
 
     isLeaf(node) {
         return (!node.left && !node.right);
@@ -178,6 +251,7 @@ class Tree {
             if (!prev.includes(curr)) prev.push(curr);
             return prev;
         }, []);
+        array.sort((a, b) => a - b);
         return this.#sortedArrayToBST(array, 0, array.length - 1)
     }
     #sortedArrayToBST(array, start, end) {
@@ -200,15 +274,41 @@ const prettyPrint = (node, prefix = '', isLeft = true) => {
     prettyPrint(node.left, `${prefix}${isLeft ? '    ' : '│   '}`, true);
 }
 
-let tree = new Tree([1, 5, 9]);
+function randomArray(length) {
+    const array = [];
+    function generator() { return Math.floor(Math.random() * 100) };
+    while (array.length < length) {
+        array.push(generator());
+    }
+    return array;
+}
+
+function printToArr(value, array) {
+    array.push(value);
+}
+
+let arr = randomArray(7);
+console.log(arr);
+
+let tree = new Tree(arr);
 
 console.log(tree);
 prettyPrint(tree.root);
-/* let othertree = new Tree([1, 3, 0, 3, 5, 7, 9, 10]);
-prettyPrint(othertree.root); */
 
-tree.insert(2);
+console.log("is it balanced? ", tree.isBalancedLRD());
+console.log("print level order: ", tree.levelOrderRec(printToArr));
+console.log("print preorder: ", tree.preOrderDLRForEachOuter(printToArr));
+console.log("print postorder: ", tree.postOrderLRDOuter(printToArr));
+console.log("print inorder: ", tree.inOrderLDRForEachRec(printToArr));
+tree.insert(101);
+tree.insert(102);
+tree.insert(103);
+console.log("is it balanced? ", tree.isBalancedLRD());
 prettyPrint(tree.root);
-debugger;
-tree.delete(2);
+tree.reBalance();
+console.log("is it balanced? ", tree.isBalancedLRD());
 prettyPrint(tree.root);
+console.log("print level order: ", tree.levelOrderRec(printToArr));
+console.log("print preorder: ", tree.preOrderDLRForEachOuter(printToArr));
+console.log("print postorder: ", tree.postOrderLRDOuter(printToArr));
+console.log("print inorder: ", tree.inOrderLDRForEachRec(printToArr));
